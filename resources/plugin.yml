@@ -1,0 +1,16 @@
+name: ${name}
+version: ${project.version}
+description: ${description}
+author: moose517
+website: ${url}
+main: com.moosemanstudios.NightSkip.NightSkip
+commands:
+    skip:
+        description: Skip the night
+    noskip:
+        aliases: nskp
+        description: Can't skip night
+    nightskip:
+        aliases: ntskp
+        description: General plugin command
+    

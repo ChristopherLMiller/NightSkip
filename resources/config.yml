@@ -1,0 +1,18 @@
+# enable debugging
+debug: false
+
+# how long in ticks you have to stop night from skipping
+delay: 30
+
+# time in ticks to skip to
+time-to-skip-to: 22812
+
+# what tick night starts
+night-start: 13187
+
+# what tick night ends
+night-end: 22812
+
+# allow auto-updating
+auto-update: false
+notify-on-update: false
