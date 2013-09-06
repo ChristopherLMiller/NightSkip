@@ -12,10 +12,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 public class NightSkipCommandExecutor implements CommandExecutor {
 	private NightSkip plugin;
 	private static List<String> countdownStarted = new ArrayList<String>();
+	BukkitTask task;
 	
 	public NightSkipCommandExecutor(NightSkip plugin) {
 		this.plugin = plugin;
@@ -57,7 +59,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 								countdownStarted.add(world.getName());
 								
 								// we are ready to schedule the task at this point.
-								// TODO: schedule the task
+								task = new NightSkipTask(world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay);
 							}
 						} else {
 							sender.sendMessage(ChatColor.RED + "Current Time: " + world.getTime() + " - Time must be between " + plugin.nightStart + "-" + plugin.nightEnd + " to skip the night");
@@ -90,7 +92,9 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						}
 						
 						countdownStarted.remove(((Player) sender).getWorld().getName());
-						// TODO: cancel the task
+						if (task != null) {
+							task.cancel();
+						}
 					
 					} else {
 						sender.sendMessage(ChatColor.RED + "Night skipping hasn't been started");
