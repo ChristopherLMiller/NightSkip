@@ -1,9 +1,13 @@
-package com.moosemanstudios.NightSkip;
+package com.moosemanstudios.NightSkip.Bukkit;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
+import org.bukkit.WorldType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,42 +15,53 @@ import org.bukkit.entity.Player;
 
 public class NightSkipCommandExecutor implements CommandExecutor {
 	private NightSkip plugin;
-	private static Boolean countdownStarted = false;
+	private static List<String> countdownStarted = new ArrayList<String>();
 	
 	public NightSkipCommandExecutor(NightSkip plugin) {
 		this.plugin = plugin;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		
 		// handle skip
 		if (cmd.getName().equalsIgnoreCase("skip")) {
 			if (sender instanceof Player) {
 				if (sender.hasPermission("nightskip.skip")) {
-					// make sure we are actually in the "night" time
-					// first get the world the player is on
+					// get some variables
 					Player player = (Player) sender;
 					World world = player.getWorld();
 					Long time = world.getTime();
+					Environment environment = world.getEnvironment();
 					
-					if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
-						// at this point verify countdown hasn't started already
-						if (!countdownStarted) {
-							// alert all players on the current world that time is about to be skipped
-							List<Player> players = world.getPlayers();
-							
-							for (Player playerA : players) {
-								playerA.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
-								playerA.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.RED + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
-							}
-							
-							// at this point we can schedule the task!
-							countdownStarted = true;
-							// TODO: schedule the task
-						} else {
-							player.sendMessage(ChatColor.RED + "Countdown has already been started");
-						}
+					// firstly check the world type, if its nether or end move on
+					if (environment.equals(Environment.NETHER) || environment.equals(Environment.THE_END)) {
+						sender.sendMessage(ChatColor.RED + "Time doesn't exist here... its always dark");
 					} else {
-						sender.sendMessage(ChatColor.RED + "Its not night! Current time is: " + Long.toString(time) + " Night time is between: " + plugin.nightStart + "-" + plugin.nightEnd);
+						
+						// see if the time is between the configured times
+						if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
+							
+							// see if the countdown has already been started on this world
+							if (countdownStarted.contains(world.getName())) {
+								player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
+							} else {
+								
+								// at this point we can alert the rest of the players on this world that the countdown has been intiated
+								List<Player> players = world.getPlayers();
+								for(Player worldPlayer : players) {
+									worldPlayer.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
+									worldPlayer.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.WHITE + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
+								}
+								
+								// update the list to include this world now
+								countdownStarted.add(world.getName());
+								
+								// we are ready to schedule the task at this point.
+								// TODO: schedule the task
+							}
+						} else {
+							sender.sendMessage(ChatColor.RED + "Current Time: " + world.getTime() + " - Time must be between " + plugin.nightStart + "-" + plugin.nightEnd + " to skip the night");
+						}
 					}
 				} else {
 					sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.skip");
@@ -58,23 +73,25 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			
 		}
 		
-		// cancell the skip
+		// cancel the skip
 		if (cmd.getName().equalsIgnoreCase("noskip") || cmd.getName().equalsIgnoreCase("nskp")) {
 			if (sender instanceof Player) {
 				if (sender.hasPermission("nightskip.skip")) {
-					// see if the countdown has even begun yet
-					if (countdownStarted) {
-						countdownStarted = false;
+					Player player = (Player) sender;
+					World world = player.getWorld();
+					
+					// see if the list contains the world name, if so then we can cancel it
+					if (countdownStarted.contains(world.getName())) {
 						
-						// alert all players on the world it was cancelled
-						Player player = (Player) sender;
-						World world = player.getWorld();
-						List<Player> players = world.getPlayers();
-						for (Player playerA: players) {
-							playerA.sendMessage(ChatColor.YELLOW + player.getName() + " has cancelled the vote to skip night");
+						// we do, so go ahead and alert the rest of the players its being cancelled
+						List<Player> players = ((Player) sender).getWorld().getPlayers();
+						for (Player playerWorld : players) {
+							playerWorld.sendMessage(ChatColor.YELLOW + sender.getName() + " needs the night, sorry we can't skip");
 						}
-						// TODO: cancel the countdown
 						
+						countdownStarted.remove(((Player) sender).getWorld().getName());
+						// TODO: cancel the task
+					
 					} else {
 						sender.sendMessage(ChatColor.RED + "Night skipping hasn't been started");
 					}
@@ -93,7 +110,21 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			// general commands related to the plugin
 			
 			if (args.length == 0) {
-				sender.sendMessage(ChatColor.RED + "Type " + ChatColor.WHITE + "/nightskip help " + ChatColor.RED + " for help");
+				sender.sendMessage("/nightskip help" + ChatColor.RED + ": Display this help screen");
+				sender.sendMessage("/nightskip version" + ChatColor.RED + ": Display version of the plugin");
+				if (sender.hasPermission("nightskip.admin")) {
+					sender.sendMessage("/nightskip reload" + ChatColor.RED + ": Reload the config file");
+					sender.sendMessage("/nightskip view" + ChatColor.RED + ": View current values");
+					sender.sendMessage("/nightskip delay <time>" + ChatColor.RED + ": Change the delay before night skips - in ticks");
+					sender.sendMessage("/nightskip skipto <time>" + ChatColor.RED + ": Change the time to skip to (0-24000");
+					sender.sendMessage("/nightskip start <time>" + ChatColor.RED + ": Change night start time (0-24000");
+					sender.sendMessage("/nightskip end <time>" + ChatColor.RED + ": Change night end time (0-24000");
+				}
+				
+				if (sender.hasPermission("nightskip.skip")) {
+					sender.sendMessage("/skip" + ChatColor.RED + ": Skip the night, starts the delay");
+					sender.sendMessage("/noskip" + ChatColor.RED + ": Cancels countdown, player required night");
+				}
 			} else {
 				if (args[0].equalsIgnoreCase("help")) {
 					sender.sendMessage("/nightskip help" + ChatColor.RED + ": Display this help screen");
@@ -112,7 +143,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						sender.sendMessage("/noskip" + ChatColor.RED + ": Cancels countdown, player required night");
 					}
 				} else if (args[0].equalsIgnoreCase("version")) {
-					sender.sendMessage(ChatColor.GOLD + plugin.pdfFile.getName() + " Version: " + ChatColor.WHITE + plugin.pdfFile.getVersion());
+					sender.sendMessage(ChatColor.GOLD + plugin.pdfFile.getName() + " Version: " + ChatColor.WHITE + plugin.pdfFile.getVersion() + ChatColor.GOLD + " Author: moose517");
 				} else if (args[0].equalsIgnoreCase("reload")) {
 					if (sender.hasPermission("nightskip.admin")) {
 						plugin.loadConfig();

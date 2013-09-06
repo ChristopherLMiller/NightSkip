@@ -1,4 +1,4 @@
-package com.moosemanstudios.NightSkip;
+package com.moosemanstudios.NightSkip.Bukkit;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,15 +54,6 @@ public class NightSkip extends JavaPlugin
 	}
 	
 	public void loadConfig() {
-		/*
-		if (!getConfig().contains("debug")) getConfig().set("debug", false);
-		if (!getConfig().contains("delay")) getConfig().set("delay", 30);
-		if (!getConfig().contains("time-to-skip-to")) getConfig().set("time-to-skip-to", 22812);
-		if (!getConfig().contains("night-start")) getConfig().set("night-start", 13187);
-		if (!getConfig().contains("night-end")) getConfig().set("night-end", 22812);
-		saveConfig();*/
-		
-		// test code, dunno if it will work
 		FileConfiguration cfg = getConfig();
 		cfg.options().copyDefaults(true);
 		this.saveConfig();

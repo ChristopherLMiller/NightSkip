@@ -3,7 +3,7 @@ version: ${project.version}
 description: ${description}
 author: moose517
 website: ${url}
-main: com.moosemanstudios.NightSkip.NightSkip
+main: com.moosemanstudios.NightSkip.Bukkit.NightSkip
 commands:
     skip:
         description: Skip the night

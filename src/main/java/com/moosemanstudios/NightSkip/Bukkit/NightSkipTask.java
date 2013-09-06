@@ -1,4 +1,4 @@
-package com.moosemanstudios.NightSkip;
+package com.moosemanstudios.NightSkip.Bukkit;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
