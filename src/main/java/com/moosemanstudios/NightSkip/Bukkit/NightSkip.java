@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import net.gravitydevelopment.updater.Updater;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mcstats.Metrics;
@@ -31,9 +32,10 @@ public class NightSkip extends JavaPlugin
 		loadConfig();
 		
 		// register the command executor
-		getCommand("skip").setExecutor(new NightSkipCommandExecutor(this));
-		getCommand("noskip").setExecutor(new NightSkipCommandExecutor(this));
-		getCommand("nightskip").setExecutor(new NightSkipCommandExecutor(this));
+		CommandExecutor executor = new NightSkipCommandExecutor(this);
+		getCommand("skip").setExecutor(executor);
+		getCommand("noskip").setExecutor(executor);
+		getCommand("nightskip").setExecutor(executor);
 		
 		// enable metrics
 		try {
