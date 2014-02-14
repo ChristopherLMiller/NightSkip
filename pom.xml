@@ -7,7 +7,7 @@
 	<!--  project information -->
   	<groupId>com.moosemanstudios</groupId>
   	<artifactId>NightSkip</artifactId>
-  	<version>1.1-SNAPSHOT</version>
+  	<version>1.1</version>
   	<name>NightSkip</name>
   	<url>http://moosemanstudios.com</url>
   	<description>Skip the night</description>
