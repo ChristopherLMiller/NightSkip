@@ -6,8 +6,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class NightSkipTask extends BukkitRunnable {
 	private final World world;
 	private final Long time;
+	private NightSkip plugin;
 	
-	public NightSkipTask(World world, Long time) {
+	public NightSkipTask(NightSkip plugin, World world, Long time) {
+		this.plugin = plugin;
 		this.world = world;
 		this.time = time;
 	}
@@ -15,6 +17,7 @@ public class NightSkipTask extends BukkitRunnable {
 	@Override
 	public void run() {	
 		world.setTime(time);
+		plugin.tasks.remove(world.getName());
 	}
 
 }

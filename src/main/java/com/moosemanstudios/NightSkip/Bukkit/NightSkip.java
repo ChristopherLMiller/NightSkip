@@ -2,6 +2,8 @@ package com.moosemanstudios.NightSkip.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import net.gravitydevelopment.updater.Updater;
@@ -10,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.mcstats.Metrics;
 
 public class NightSkip extends JavaPlugin
@@ -21,6 +24,7 @@ public class NightSkip extends JavaPlugin
 	int delay, timeToSkipTo;
 	Boolean debug;
 	int nightStart, nightEnd;
+	Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	
 	public boolean updaterEnabled, updaterAuto, updaterNotify;
 	

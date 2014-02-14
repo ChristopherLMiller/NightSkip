@@ -1,11 +1,6 @@
 package com.moosemanstudios.NightSkip.Bukkit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import net.gravitydevelopment.updater.Updater;
 
@@ -20,7 +15,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class NightSkipCommandExecutor implements CommandExecutor {
 	private NightSkip plugin;
-	Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	
 	public NightSkipCommandExecutor(NightSkip plugin) {
 		this.plugin = plugin;
@@ -46,7 +40,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
 							
 							// see if the countdown has already been started on this world
-							if (tasks.containsKey(world.getName())) {
+							if (plugin.tasks.containsKey(world.getName())) {
 								player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
 							} else {	
 								// at this point we can alert the rest of the players on this world that the countdown has been initiated
@@ -57,7 +51,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 								}
 														
 								// we are ready to schedule the task at this point.
-								tasks.put(world.getName(), new NightSkipTask(world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
+								plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
 							}
 						} else {
 							sender.sendMessage(ChatColor.RED + "Current Time: " + world.getTime() + " - Time must be between " + plugin.nightStart + "-" + plugin.nightEnd + " to skip the night");
@@ -80,15 +74,15 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 				World world = player.getWorld();
 					
 				// see if the list contains the world name, if so then we can cancel it
-				if (tasks.containsKey(world.getName())) {			
+				if (plugin.tasks.containsKey(world.getName())) {			
 					// we do, so go ahead and alert the rest of the players its being cancelled
 					List<Player> players = ((Player) sender).getWorld().getPlayers();
 					for (Player playerWorld : players) {
 						playerWorld.sendMessage(ChatColor.YELLOW + sender.getName() + " needs the night, sorry we can't skip");
 					}
 					
-					BukkitTask task = tasks.get(world.getName());
-					tasks.remove(world.getName());
+					BukkitTask task = plugin.tasks.get(world.getName());
+					plugin.tasks.remove(world.getName());
 					task.cancel();
 				
 				} else {
