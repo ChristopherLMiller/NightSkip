@@ -10,6 +10,8 @@ import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -49,7 +51,15 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 									worldPlayer.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
 									worldPlayer.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.WHITE + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
 								}
-														
+								
+								// check if there are any mob within distance
+								if (plugin.mobEnabled){
+									if (mobInRange(player)) {
+										player.sendMessage(ChatColor.RED + "There are hostible creatures too close to skip the night!");
+										return true;
+									}
+								}
+
 								// we are ready to schedule the task at this point.
 								plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
 							}
@@ -264,5 +274,18 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			sender.sendMessage("/skip" + ChatColor.RED + ": Skip the night, starts the delay");
 			sender.sendMessage("/noskip" + ChatColor.RED + ": Cancels countdown, player required night");
 		}
+	}
+	
+	public boolean mobInRange(Player player) {
+		Entity entity = (Entity) player;
+		List<Entity> mobs = entity.getNearbyEntities(plugin.mobRange, plugin.mobRange, plugin.mobRange);
+		
+		// loop through all entities
+		for(Entity mob : mobs) {
+			if (mob instanceof Monster) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

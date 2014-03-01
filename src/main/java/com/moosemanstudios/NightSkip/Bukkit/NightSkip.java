@@ -24,6 +24,8 @@ public class NightSkip extends JavaPlugin
 	int delay, timeToSkipTo;
 	Boolean debug;
 	int nightStart, nightEnd;
+	public int mobRange;
+	public boolean mobEnabled;
 	Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	
 	public boolean updaterEnabled, updaterAuto, updaterNotify;
@@ -86,6 +88,10 @@ public class NightSkip extends JavaPlugin
 		if (!getConfig().contains("updater.auto")) getConfig().set("updater.auto", true);
 		if (!getConfig().contains("updater.notify")) getConfig().set("updater.notify", true);
 		
+		// mob range
+		if (!getConfig().contains("mob-check.enabled")) getConfig().set("mob-check.enabled", false);
+		if (!getConfig().contains("mob-check.range")) getConfig().set("mob-check.range", 20);
+		
 		saveConfig();
 		
 		debug = getConfig().getBoolean("debug");
@@ -113,6 +119,12 @@ public class NightSkip extends JavaPlugin
 				log.info(prefix + "Auto updating enabled");
 			if (updaterNotify)
 				log.info(prefix + "Notifying admins on update");
+		}
+		
+		mobEnabled = getConfig().getBoolean("mob-check.enabled");
+		mobRange = getConfig().getInt("mob-check.range");
+		if (debug && mobEnabled) {
+			log.info(prefix + "Mob checking enabled - Mob-range: " + mobRange);
 		}
 	}
 	
