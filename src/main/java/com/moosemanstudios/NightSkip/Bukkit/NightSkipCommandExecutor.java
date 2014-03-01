@@ -55,7 +55,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 								// check if there are any mob within distance
 								if (plugin.mobEnabled){
 									if (mobInRange(player)) {
-										player.sendMessage(ChatColor.RED + "There are hostible creatures too close to skip the night!");
+										player.sendMessage(ChatColor.RED + "There are hostile creatures too close to skip the night!");
 										return true;
 									}
 								}
@@ -205,6 +205,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						sender.sendMessage(ChatColor.AQUA + "Skip to (ticks): " + ChatColor.WHITE + plugin.timeToSkipTo);
 						sender.sendMessage(ChatColor.AQUA + "Night start: " + ChatColor.WHITE + plugin.nightStart);
 						sender.sendMessage(ChatColor.AQUA + "Night end: " + ChatColor.WHITE + plugin.nightEnd);
+						sender.sendMessage(ChatColor.AQUA + "Mob-check range: " + ChatColor.WHITE + plugin.mobRange);
 					}
 				} else if (args[0].equalsIgnoreCase("update")) {
 					if (sender.hasPermission("nightskip.admin")) {
