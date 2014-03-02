@@ -278,8 +278,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 	}
 	
 	public boolean mobInRange(Player player) {
-		Entity entity = (Entity) player;
-		List<Entity> mobs = entity.getNearbyEntities(plugin.mobRange, plugin.mobRange, plugin.mobRange);
+		List<Entity> mobs = player.getNearbyEntities(plugin.mobRange, plugin.mobRange, plugin.mobRange);
 		
 		// loop through all entities
 		for(Entity mob : mobs) {
