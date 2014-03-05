@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.gravitydevelopment.updater.Updater;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -45,13 +46,6 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 							if (plugin.tasks.containsKey(world.getName())) {
 								player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
 							} else {	
-								// at this point we can alert the rest of the players on this world that the countdown has been initiated
-								List<Player> players = world.getPlayers();
-								for(Player worldPlayer : players) {
-									worldPlayer.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
-									worldPlayer.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.WHITE + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
-								}
-								
 								// check if there are any mob within distance
 								if (plugin.mobEnabled){
 									if (mobInRange(player)) {
@@ -59,7 +53,20 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 										return true;
 									}
 								}
-
+								
+								// see if there is anybody else online first, if not lets just skip right to day!
+								if (Bukkit.getServer().getOnlinePlayers().length > 1) {
+									// at this point we can alert the rest of the players on this world that the countdown has been initiated
+									List<Player> players = world.getPlayers();
+									for(Player worldPlayer : players) {
+										worldPlayer.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
+										worldPlayer.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.WHITE + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
+									}
+								} else {
+									world.setTime(plugin.timeToSkipTo);
+									player.sendMessage(ChatColor.YELLOW + "Night Skipped");
+								}
+								
 								// we are ready to schedule the task at this point.
 								plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
 							}
@@ -124,93 +131,25 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
 					}
 				} else if (args[0].equalsIgnoreCase("delay")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						if (args.length == 2) {
-							plugin.setConfigValue("delay", Integer.parseInt(args[1]));
-							plugin.delay = plugin.getConfig().getInt("delay");
-							sender.sendMessage("Delay set to: " + plugin.delay + "ticks");
-						} else if (args.length < 2) {
-							sender.sendMessage(ChatColor.RED + "Must specify a delay in ticks");
-						} else {
-							sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
-						}
-							
-					} else {
-						sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
-					}
+					delay(args, sender);
 				} else if (args[0].equalsIgnoreCase("skipto")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						if (args.length == 2) {
-							int time = Integer.parseInt(args[1]);
-							
-							if ((time >= 0) && (time <= 2400)) {
-								plugin.setConfigValue("time-to-skip-to", time);
-								plugin.timeToSkipTo = plugin.getConfig().getInt("time-to-skip-to");
-								sender.sendMessage("Skip to time: " + plugin.timeToSkipTo + "ticks");					
-							} else {
-								sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
-							}
-						} else if (args.length < 2) {
-							sender.sendMessage(ChatColor.RED + "Must specify time to skip to");
-						} else {
-							sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
-						}
-					} else {
-						sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
-					}
+					skipTo(args, sender);
 				} else if (args[0].equalsIgnoreCase("start")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						if (args.length == 2) {
-							int time = Integer.parseInt(args[1]);
-							
-							if ((time >= 0) && (time <= 24000)) {
-								plugin.setConfigValue("night-start", time);
-								plugin.nightStart = plugin.getConfig().getInt("night-start");
-								sender.sendMessage("Night start: " + plugin.nightStart + "ticks");
-							} else {
-								sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
-							}
-						} else if (args.length < 2) {
-							sender.sendMessage(ChatColor.RED + "Must specify time for night start");
-						} else {
-							sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
-						}
-					} else {
-						sender.sendMessage(ChatColor.RED + "Missing required permisson node: " + ChatColor.WHITE + "nightskip.admin");
-					}
+					nightStart(args, sender);
 				} else if (args[0].equalsIgnoreCase("end")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						if (args.length == 2) {
-							int time = Integer.parseInt(args[1]);
-							
-							if ((time >= 0) && (time <= 24000)) {
-								plugin.setConfigValue("night-end", time);
-								plugin.nightEnd = plugin.getConfig().getInt("night-end");
-								sender.sendMessage("Night end: " + plugin.nightEnd + "ticks");
-							} else {
-								sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
-							}
-						} else if (args.length < 2) {
-							sender.sendMessage(ChatColor.RED + "Must specify time for night end");
-						} else {
-							sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
-						}
-					} else {
-						sender.sendMessage(ChatColor.RED + "Missing required permisson node: " + ChatColor.WHITE + "nightskip.admin");
-					}
+					nightEnd(args, sender);
 				} else if (args[0].equalsIgnoreCase("view")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						sender.sendMessage(ChatColor.GOLD + "NightSkip" + ChatColor.WHITE + " Current values: ");
-						sender.sendMessage(ChatColor.AQUA + "Delay (ticks): " + ChatColor.WHITE + plugin.delay);
-						sender.sendMessage(ChatColor.AQUA + "Skip to (ticks): " + ChatColor.WHITE + plugin.timeToSkipTo);
-						sender.sendMessage(ChatColor.AQUA + "Night start: " + ChatColor.WHITE + plugin.nightStart);
-						sender.sendMessage(ChatColor.AQUA + "Night end: " + ChatColor.WHITE + plugin.nightEnd);
-						sender.sendMessage(ChatColor.AQUA + "Mob-check range: " + ChatColor.WHITE + plugin.mobRange);
-					}
+					view(sender);
 				} else if (args[0].equalsIgnoreCase("update")) {
-					if (sender.hasPermission("nightskip.admin")) {
-						update(sender);
-					}
+					update(sender);
+				} else if (args[0].equalsIgnoreCase("mob-check")) {
+					mobCheckEnable(args, sender);
+				} else if (args[0].equalsIgnoreCase("mob-radius")) {
+					mobRadius(args, sender);
+				} else if (args[0].equalsIgnoreCase("bed-enter")) {
+					bedEnterEnable(args, sender);
+				} else {
+					sender.sendMessage("Invalid command. All available commands available at /nightskip help");
 				}
 			}
 			return true;
@@ -218,43 +157,199 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 		return false;
 	}
 	
-	public void update(CommandSender sender) {
-		if (plugin.updaterEnabled) {
-			Updater updater = new Updater(plugin, 64667, plugin.getFileFolder(), Updater.UpdateType.NO_DOWNLOAD, false);
-			if (updater.getResult() == Updater.UpdateResult.UPDATE_AVAILABLE) {
-				sender.sendMessage(ChatColor.AQUA + "Update found, starting download: " + updater.getLatestName());
-				updater = new Updater(plugin, 35179, plugin.getFileFolder(), Updater.UpdateType.DEFAULT, true);
-
-				switch (updater.getResult()) {
-				case FAIL_BADID:
-					sender.sendMessage(ChatColor.AQUA + "ID was bad, report this to moose517 on dev.bukkit.org");
-					break;
-				case FAIL_DBO:
-					sender.sendMessage(ChatColor.AQUA + "Dev.bukkit.org couldn't be contacted, try again later");
-					break;
-				case FAIL_DOWNLOAD:
-					sender.sendMessage(ChatColor.AQUA + "File download failed");
-					break;
-				case FAIL_NOVERSION:
-					sender.sendMessage(ChatColor.AQUA + "Unable to check version on dev.bukkit.org, notify moose517");
-					break;
-				case NO_UPDATE:
-					break;
-				case SUCCESS:
-					sender.sendMessage(ChatColor.AQUA + "Update downloaded successfully, restart server to apply update");
-					break;
-				case UPDATE_AVAILABLE:
-					sender.sendMessage(ChatColor.AQUA + "Update found but not downloaded");
-					break;
-				default:
-					sender.sendMessage(ChatColor.RED + "Shoudn't have had this happen, contact moose517");
-					break;
-				}
+	public void delay(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length == 2) {
+				plugin.setConfigValue("delay", Integer.parseInt(args[1]));
+				plugin.delay = plugin.getConfig().getInt("delay");
+				sender.sendMessage("Delay set to: " + plugin.delay + "ticks");
+			} else if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Must specify a delay in ticks");
 			} else {
-				sender.sendMessage(ChatColor.AQUA + "No updates found");
+				sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
+			}
+				
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void skipTo(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length == 2) {
+				int time = Integer.parseInt(args[1]);
+				
+				if ((time >= 0) && (time <= 2400)) {
+					plugin.setConfigValue("time-to-skip-to", time);
+					plugin.timeToSkipTo = plugin.getConfig().getInt("time-to-skip-to");
+					sender.sendMessage("Skip to time: " + plugin.timeToSkipTo + "ticks");					
+				} else {
+					sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
+				}
+			} else if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Must specify time to skip to");
+			} else {
+				sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
 			}
 		} else {
-			sender.sendMessage(ChatColor.AQUA + "Updater not enabled.  Enable in config");
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void nightStart(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length == 2) {
+				int time = Integer.parseInt(args[1]);
+				
+				if ((time >= 0) && (time <= 24000)) {
+					plugin.setConfigValue("night-start", time);
+					plugin.nightStart = plugin.getConfig().getInt("night-start");
+					sender.sendMessage("Night start: " + plugin.nightStart + "ticks");
+				} else {
+					sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
+				}
+			} else if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Must specify time for night start");
+			} else {
+				sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permisson node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void nightEnd(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length == 2) {
+				int time = Integer.parseInt(args[1]);
+				
+				if ((time >= 0) && (time <= 24000)) {
+					plugin.setConfigValue("night-end", time);
+					plugin.nightEnd = plugin.getConfig().getInt("night-end");
+					sender.sendMessage("Night end: " + plugin.nightEnd + "ticks");
+				} else {
+					sender.sendMessage(ChatColor.RED + "Invalid value, must be in the range of 0-24000");
+				}
+			} else if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Must specify time for night end");
+			} else {
+				sender.sendMessage(ChatColor.RED + "Too many arguments, see help for more info");
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permisson node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void bedEnterEnable(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length != 2) {
+				sender.sendMessage("Must specify enable or disable only");
+			} else {
+				if (args[1].equalsIgnoreCase("enable")) {
+					plugin.setConfigValue("misc.skip-on-bed-enter", true);
+					plugin.skipBedEnter = true;
+					sender.sendMessage("Skip on Bed Enter: Enabled");
+				} else if (args[1].equalsIgnoreCase("disable")) {
+					plugin.setConfigValue("misc.skip-on-bed-enter", false);
+					plugin.skipBedEnter = false;
+					sender.sendMessage("Skip on Bed Enter: Disabled");
+				} else {
+					sender.sendMessage("Invalid option.  Please issue" + ChatColor.RED + "/nightskip help" + ChatColor.WHITE + " for more help");
+				}
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void mobRadius(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length != 2) {
+				sender.sendMessage("Must provide a radius and only a radius");
+			} else {
+				plugin.setConfigValue("mob-check.range",Integer.parseInt(args[1]));
+				plugin.mobRange = Integer.parseInt(args[1]);
+				sender.sendMessage("Mob check range: " + plugin.mobRange);
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void view(CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			sender.sendMessage(ChatColor.GOLD + "NightSkip" + ChatColor.WHITE + " Current values: ");
+			sender.sendMessage(ChatColor.AQUA + "Delay (ticks): " + ChatColor.WHITE + plugin.delay);
+			sender.sendMessage(ChatColor.AQUA + "Skip to (ticks): " + ChatColor.WHITE + plugin.timeToSkipTo);
+			sender.sendMessage(ChatColor.AQUA + "Night start: " + ChatColor.WHITE + plugin.nightStart);
+			sender.sendMessage(ChatColor.AQUA + "Night end: " + ChatColor.WHITE + plugin.nightEnd);
+			sender.sendMessage(ChatColor.AQUA + "Mob-check range: " + ChatColor.WHITE + plugin.mobRange);
+		}
+	}
+	
+	public void mobCheckEnable(String args[], CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (args.length != 2) {
+				sender.sendMessage("Must specify enable or disable only");
+			} else {
+				if (args[1].equalsIgnoreCase("enable")) {
+					plugin.setConfigValue("mob-check.enabled", true);
+					plugin.mobEnabled = true;
+					sender.sendMessage("Mob Check: Enabled");
+				} else if (args[1].equalsIgnoreCase("disable")) {
+					plugin.setConfigValue("mob-check.enabled", false);
+					plugin.mobEnabled = false;
+					sender.sendMessage("Mob Check: Disabled");
+				} else {
+					sender.sendMessage("Invalid option.  Please issue" + ChatColor.RED + "/nightskip help" + ChatColor.WHITE + " for more help");
+				}
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
+		}
+	}
+	
+	public void update(CommandSender sender) {
+		if (sender.hasPermission("nightskip.admin")) {
+			if (plugin.updaterEnabled) {
+				Updater updater = new Updater(plugin, 64667, plugin.getFileFolder(), Updater.UpdateType.NO_DOWNLOAD, false);
+				if (updater.getResult() == Updater.UpdateResult.UPDATE_AVAILABLE) {
+					sender.sendMessage(ChatColor.AQUA + "Update found, starting download: " + updater.getLatestName());
+					updater = new Updater(plugin, 35179, plugin.getFileFolder(), Updater.UpdateType.DEFAULT, true);
+	
+					switch (updater.getResult()) {
+					case FAIL_BADID:
+						sender.sendMessage(ChatColor.AQUA + "ID was bad, report this to moose517 on dev.bukkit.org");
+						break;
+					case FAIL_DBO:
+						sender.sendMessage(ChatColor.AQUA + "Dev.bukkit.org couldn't be contacted, try again later");
+						break;
+					case FAIL_DOWNLOAD:
+						sender.sendMessage(ChatColor.AQUA + "File download failed");
+						break;
+					case FAIL_NOVERSION:
+						sender.sendMessage(ChatColor.AQUA + "Unable to check version on dev.bukkit.org, notify moose517");
+						break;
+					case NO_UPDATE:
+						break;
+					case SUCCESS:
+						sender.sendMessage(ChatColor.AQUA + "Update downloaded successfully, restart server to apply update");
+						break;
+					case UPDATE_AVAILABLE:
+						sender.sendMessage(ChatColor.AQUA + "Update found but not downloaded");
+						break;
+					default:
+						sender.sendMessage(ChatColor.RED + "Shoudn't have had this happen, contact moose517");
+						break;
+					}
+				} else {
+					sender.sendMessage(ChatColor.AQUA + "No updates found");
+				}
+			} else {
+				sender.sendMessage(ChatColor.AQUA + "Updater not enabled.  Enable in config");
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
 		}
 	}
 	
@@ -268,6 +363,9 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			sender.sendMessage("/nightskip skipto <time>" + ChatColor.RED + ": Change the time to skip to (0-24000");
 			sender.sendMessage("/nightskip start <time>" + ChatColor.RED + ": Change night start time (0-24000");
 			sender.sendMessage("/nightskip end <time>" + ChatColor.RED + ": Change night end time (0-24000");
+			sender.sendMessage("/nightskip mob-check <enabled/disabled" + ChatColor.RED + ": Enable/disable Mob radius checking");
+			sender.sendMessage("/nightskip mob-radius <radius>" + ChatColor.RED + ": Change radius of mob checking");
+			sender.sendMessage("/nightskip bed-enter <enable/disable>" + ChatColor.RED + ": Enable/disable skipping on bed enter");
 			sender.sendMessage("/nightskip update" + ChatColor.RED + ": Update the plugin");
 		}
 		

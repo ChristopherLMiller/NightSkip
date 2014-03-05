@@ -65,10 +65,10 @@ public class NightSkip extends JavaPlugin
 			}
 		}
 		
-		// register bed enter events if set
+		// register bed enter events
 		this.getServer().getPluginManager().registerEvents(new BedEnterEvent(this), this);
 		
-		log.info(prefix + " has been enabled");
+		log.info(prefix + "has been enabled");
 	}
 	
 	@Override 
@@ -80,6 +80,7 @@ public class NightSkip extends JavaPlugin
 		
 		// misc
 		if (getConfig().contains("debug")) getConfig().set("misc.debug", getConfig().getBoolean("debug"));
+		getConfig().set("debug", null);
 		if (!getConfig().contains("misc.debug")) getConfig().set("misc.debug", false);
 		if (!getConfig().contains("misc.skip-on-bed-enter")) getConfig().set("misc.skip-on-bed-enter", true);
 		
@@ -102,7 +103,7 @@ public class NightSkip extends JavaPlugin
 		
 		debug = getConfig().getBoolean("misc.debug");
 		if (debug)
-			log.info(prefix + " debugging enabled");
+			log.info(prefix + "debugging enabled");
 		
 		skipBedEnter = getConfig().getBoolean("misc.skip-on-bed-enter");
 		if (debug && skipBedEnter) {
