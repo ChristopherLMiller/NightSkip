@@ -283,7 +283,9 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			sender.sendMessage(ChatColor.AQUA + "Skip to (ticks): " + ChatColor.WHITE + plugin.timeToSkipTo);
 			sender.sendMessage(ChatColor.AQUA + "Night start: " + ChatColor.WHITE + plugin.nightStart);
 			sender.sendMessage(ChatColor.AQUA + "Night end: " + ChatColor.WHITE + plugin.nightEnd);
+			sender.sendMessage(ChatColor.AQUA + "Mob-check: " + ChatColor.WHITE + plugin.mobEnabled);
 			sender.sendMessage(ChatColor.AQUA + "Mob-check range: " + ChatColor.WHITE + plugin.mobRange);
+			sender.sendMessage(ChatColor.AQUA + "Skip on bed enter: " + ChatColor.WHITE + plugin.skipBedEnter);
 		}
 	}
 	
