@@ -25,7 +25,7 @@ public class NightSkip extends JavaPlugin
 	Boolean debug;
 	int nightStart, nightEnd;
 	public int mobRange;
-	public boolean mobEnabled;
+	public boolean mobEnabled, skipBedEnter;
 	Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	
 	public boolean updaterEnabled, updaterAuto, updaterNotify;
@@ -55,14 +55,18 @@ public class NightSkip extends JavaPlugin
 		if (updaterEnabled) {
 			if (updaterAuto) {
 				Updater updater = new Updater(this, 64667 , this.getFile(), Updater.UpdateType.DEFAULT, true);
-				if (updater.getResult() == Updater.UpdateResult.SUCCESS)
+				if (updater.getResult() == Updater.UpdateResult.SUCCESS) {
 					log.info(prefix + "update downloaded successfully, restart server to apply update");
 				}
+			}
 			if (updaterNotify) {
-					log.info(prefix + "Notifying admins as they login if update found");
-						this.getServer().getPluginManager().registerEvents(new UpdaterPlayerListener(this), this);
-					}
-				}
+				log.info(prefix + "Notifying admins as they login if update found");
+				this.getServer().getPluginManager().registerEvents(new UpdaterPlayerListener(this), this);
+			}
+		}
+		
+		// register bed enter events if set
+		this.getServer().getPluginManager().registerEvents(new BedEnterEvent(this), this);
 		
 		log.info(prefix + " has been enabled");
 	}
@@ -75,7 +79,9 @@ public class NightSkip extends JavaPlugin
 	public void loadConfig() {
 		
 		// misc
-		if (!getConfig().contains("debug")) getConfig().set("debug", true);
+		if (getConfig().contains("debug")) getConfig().set("misc.debug", getConfig().getBoolean("debug"));
+		if (!getConfig().contains("misc.debug")) getConfig().set("misc.debug", false);
+		if (!getConfig().contains("misc.skip-on-bed-enter")) getConfig().set("misc.skip-on-bed-enter", true);
 		
 		// time settings
 		if (!getConfig().contains("delay")) getConfig().set("delay", 300);
@@ -94,10 +100,14 @@ public class NightSkip extends JavaPlugin
 		
 		saveConfig();
 		
-		debug = getConfig().getBoolean("debug");
+		debug = getConfig().getBoolean("misc.debug");
 		if (debug)
 			log.info(prefix + " debugging enabled");
 		
+		skipBedEnter = getConfig().getBoolean("misc.skip-on-bed-enter");
+		if (debug && skipBedEnter) {
+			log.info(prefix + "Skipping on bed enter");
+		}
 		delay = getConfig().getInt("delay");
 		timeToSkipTo = getConfig().getInt("time-to-skip-to");
 		nightStart = getConfig().getInt("night-start");
