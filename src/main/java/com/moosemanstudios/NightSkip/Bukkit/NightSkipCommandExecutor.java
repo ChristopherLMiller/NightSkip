@@ -41,34 +41,33 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 					} else {
 						// see if the time is between the configured times
 						if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
-							
-							// see if the countdown has already been started on this world
-							if (plugin.tasks.containsKey(world.getName())) {
-								player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
-							} else {	
-								// check if there are any mob within distance
-								if (plugin.mobEnabled){
-									if (mobInRange(player)) {
-										player.sendMessage(ChatColor.RED + "There are hostile creatures too close to skip the night!");
-										return true;
+							// see how many players are online, if its just the one, skip instantly
+							if (Bukkit.getServer().getOnlinePlayers().length > 1) {
+								// see if the countdown has already been started on this world
+								if (plugin.tasks.containsKey(world.getName())) {
+									player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
+								} else {	
+									// check if there are any mob within distance
+									if (plugin.mobEnabled){
+										if (mobInRange(player)) {
+											player.sendMessage(ChatColor.RED + "There are hostile creatures too close to skip the night!");
+											return true;
+										}
 									}
-								}
-								
-								// see if there is anybody else online first, if not lets just skip right to day!
-								if (Bukkit.getServer().getOnlinePlayers().length > 1) {
+
 									// at this point we can alert the rest of the players on this world that the countdown has been initiated
 									List<Player> players = world.getPlayers();
 									for(Player worldPlayer : players) {
 										worldPlayer.sendMessage(ChatColor.YELLOW + player.getName() + " has requested to skip the night.");
 										worldPlayer.sendMessage(ChatColor.YELLOW + "Issue the command " + ChatColor.WHITE + "/noskip" + ChatColor.YELLOW + " within " + Integer.toString(plugin.delay/20) + " seconds to keep the night");
 									}
-								} else {
-									world.setTime(plugin.timeToSkipTo);
-									player.sendMessage(ChatColor.YELLOW + "Night Skipped");
+									
+									// we are ready to schedule the task at this point.
+									plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
 								}
-								
-								// we are ready to schedule the task at this point.
-								plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
+							} else {
+								world.setTime(plugin.timeToSkipTo);;
+								player.sendMessage(ChatColor.YELLOW + "Night Skipped");
 							}
 						} else {
 							sender.sendMessage(ChatColor.RED + "Current Time: " + world.getTime() + " - Time must be between " + plugin.nightStart + "-" + plugin.nightEnd + " to skip the night");
