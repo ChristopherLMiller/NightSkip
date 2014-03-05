@@ -66,7 +66,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 									plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
 								}
 							} else {
-								world.setTime(plugin.timeToSkipTo);;
+								world.setTime(plugin.timeToSkipTo);
 								player.sendMessage(ChatColor.YELLOW + "Night Skipped");
 							}
 						} else {
