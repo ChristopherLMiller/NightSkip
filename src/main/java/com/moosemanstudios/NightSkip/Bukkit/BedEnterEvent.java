@@ -21,6 +21,11 @@ public class BedEnterEvent implements Listener {
 			Bukkit.getServer().dispatchCommand((CommandSender) event.getPlayer(), "skip");
 			event.getPlayer().sendMessage(ChatColor.YELLOW + "You've requested the jump to day");
 			event.setCancelled(true);
+
+			if (event.getPlayer().getBedSpawnLocation() == null) {
+				event.getPlayer().setBedSpawnLocation(event.getBed().getLocation());
+				event.getPlayer().sendMessage("Bed spawn location set");
+			}
 		}
 	}
 }
