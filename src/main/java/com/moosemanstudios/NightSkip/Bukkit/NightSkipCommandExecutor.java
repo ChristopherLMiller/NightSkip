@@ -1,9 +1,6 @@
 package com.moosemanstudios.NightSkip.Bukkit;
 
-import java.util.List;
-
 import net.gravitydevelopment.updater.Updater;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -15,6 +12,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.List;
 
 public class NightSkipCommandExecutor implements CommandExecutor {
 	private NightSkip plugin;
@@ -178,7 +177,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			if (args.length == 2) {
 				int time = Integer.parseInt(args[1]);
 				
-				if ((time >= 0) && (time <= 2400)) {
+				if ((time >= 0) && (time <= 24000)) {
 					plugin.setConfigValue("time-to-skip-to", time);
 					plugin.timeToSkipTo = plugin.getConfig().getInt("time-to-skip-to");
 					sender.sendMessage("Skip to time: " + plugin.timeToSkipTo + "ticks");					
