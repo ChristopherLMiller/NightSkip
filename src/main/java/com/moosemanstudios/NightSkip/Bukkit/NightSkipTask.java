@@ -18,13 +18,11 @@ public class NightSkipTask extends BukkitRunnable {
 
 	@Override
 	public void run() {	
-		if (world.getTime() <= time) {
-			world.setTime(time);
-			plugin.tasks.remove(world.getName());
+		world.setTime(time);
+		plugin.tasks.remove(world.getName());
 			
-			for (Player player: world.getPlayers()) {
-				player.sendMessage(ChatColor.YELLOW + "Time has been skipped ahead!");
-			}
+		for (Player player: world.getPlayers()) {
+			player.sendMessage(ChatColor.YELLOW + "Time has been skipped ahead!");
 		}
 	}
 }
