@@ -62,7 +62,9 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 									}
 									
 									// we are ready to schedule the task at this point.
-									plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, (long)plugin.timeToSkipTo).runTaskLater(plugin, (long)plugin.delay));
+									// We need to calculate how many ticks we are skipping past
+									Long timeToSkip = ((24000-world.getTime()) + plugin.timeToSkipTo);
+									plugin.tasks.put(world.getName(), new NightSkipTask(plugin, world, timeToSkip).runTaskLater(plugin, (long)plugin.delay));
 								}
 							} else {
 								world.setTime(plugin.timeToSkipTo);

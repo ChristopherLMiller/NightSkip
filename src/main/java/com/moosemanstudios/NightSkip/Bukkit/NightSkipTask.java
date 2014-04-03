@@ -17,8 +17,13 @@ public class NightSkipTask extends BukkitRunnable {
 	}
 
 	@Override
-	public void run() {	
-		world.setTime(time);
+	public void run() {
+
+		// we are adding the amount of time to the current full time
+		Long currentFullTime = world.getFullTime();
+
+		// now set the time
+		world.setFullTime(currentFullTime + time);
 		plugin.tasks.remove(world.getName());
 			
 		for (Player player: world.getPlayers()) {
