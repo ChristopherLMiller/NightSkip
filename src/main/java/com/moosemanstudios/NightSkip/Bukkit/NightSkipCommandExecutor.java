@@ -41,7 +41,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						// see if the time is between the configured times
 						if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
 							// see how many players are online, if its just the one, skip instantly
-							if (Bukkit.getServer().getOnlinePlayers().length > 1) {
+							if (Bukkit.getServer()._INVALID_getOnlinePlayers().length > 1) {
 								// see if the countdown has already been started on this world
 								if (plugin.tasks.containsKey(world.getName())) {
 									player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
