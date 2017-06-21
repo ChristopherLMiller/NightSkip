@@ -1,6 +1,5 @@
 package com.moosemanstudios.NightSkip.Bukkit;
 
-import net.gravitydevelopment.updater.Updater;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -41,7 +40,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 						// see if the time is between the configured times
 						if ((time >= plugin.nightStart) && (time <= plugin.nightEnd)) {
 							// see how many players are online, if its just the one, skip instantly
-							if (Bukkit.getServer()._INVALID_getOnlinePlayers().length > 1) {
+							if (Bukkit.getServer().getOnlinePlayers().size() > 1) {
 								// see if the countdown has already been started on this world
 								if (plugin.tasks.containsKey(world.getName())) {
 									player.sendMessage(ChatColor.RED + "Countdown has already been initiated on this world");
@@ -140,8 +139,6 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 					nightEnd(args, sender);
 				} else if (args[0].equalsIgnoreCase("view")) {
 					view(sender);
-				} else if (args[0].equalsIgnoreCase("update")) {
-					update(sender);
 				} else if (args[0].equalsIgnoreCase("mob-check")) {
 					mobCheckEnable(args, sender);
 				} else if (args[0].equalsIgnoreCase("mob-radius")) {
@@ -156,7 +153,7 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 		}
 		return false;
 	}
-	
+
 	public void delay(String args[], CommandSender sender) {
 		if (sender.hasPermission("nightskip.admin")) {
 			if (args.length == 2) {
@@ -311,50 +308,6 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 		}
 	}
 	
-	public void update(CommandSender sender) {
-		if (sender.hasPermission("nightskip.admin")) {
-			if (plugin.updaterEnabled) {
-				Updater updater = new Updater(plugin, 64667, plugin.getFileFolder(), Updater.UpdateType.NO_DOWNLOAD, false);
-				if (updater.getResult() == Updater.UpdateResult.UPDATE_AVAILABLE) {
-					sender.sendMessage(ChatColor.AQUA + "Update found, starting download: " + updater.getLatestName());
-					updater = new Updater(plugin, 35179, plugin.getFileFolder(), Updater.UpdateType.DEFAULT, true);
-	
-					switch (updater.getResult()) {
-					case FAIL_BADID:
-						sender.sendMessage(ChatColor.AQUA + "ID was bad, report this to moose517 on dev.bukkit.org");
-						break;
-					case FAIL_DBO:
-						sender.sendMessage(ChatColor.AQUA + "Dev.bukkit.org couldn't be contacted, try again later");
-						break;
-					case FAIL_DOWNLOAD:
-						sender.sendMessage(ChatColor.AQUA + "File download failed");
-						break;
-					case FAIL_NOVERSION:
-						sender.sendMessage(ChatColor.AQUA + "Unable to check version on dev.bukkit.org, notify moose517");
-						break;
-					case NO_UPDATE:
-						break;
-					case SUCCESS:
-						sender.sendMessage(ChatColor.AQUA + "Update downloaded successfully, restart server to apply update");
-						break;
-					case UPDATE_AVAILABLE:
-						sender.sendMessage(ChatColor.AQUA + "Update found but not downloaded");
-						break;
-					default:
-						sender.sendMessage(ChatColor.RED + "Shoudn't have had this happen, contact moose517");
-						break;
-					}
-				} else {
-					sender.sendMessage(ChatColor.AQUA + "No updates found");
-				}
-			} else {
-				sender.sendMessage(ChatColor.AQUA + "Updater not enabled.  Enable in config");
-			}
-		} else {
-			sender.sendMessage(ChatColor.RED + "Missing required permission node: " + ChatColor.WHITE + "nightskip.admin");
-		}
-	}
-	
 	public void showHelp(CommandSender sender) {
 		sender.sendMessage("/nightskip help" + ChatColor.RED + ": Display this help screen");
 		sender.sendMessage("/nightskip version" + ChatColor.RED + ": Display version of the plugin");
@@ -368,7 +321,6 @@ public class NightSkipCommandExecutor implements CommandExecutor {
 			sender.sendMessage("/nightskip mob-check <enabled/disabled" + ChatColor.RED + ": Enable/disable Mob radius checking");
 			sender.sendMessage("/nightskip mob-radius <radius>" + ChatColor.RED + ": Change radius of mob checking");
 			sender.sendMessage("/nightskip bed-enter <enable/disable>" + ChatColor.RED + ": Enable/disable skipping on bed enter");
-			sender.sendMessage("/nightskip update" + ChatColor.RED + ": Update the plugin");
 		}
 		
 		if (sender.hasPermission("nightskip.skip")) {

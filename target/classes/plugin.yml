@@ -1,0 +1,16 @@
+name: NightSkip
+version: 1.3.7
+description: Skip the night
+author: moose517
+website: http://moosemanstudios.com
+main: com.moosemanstudios.NightSkip.Bukkit.NightSkip
+commands:
+    skip:
+        description: Skip the night
+    noskip:
+        aliases: nskp
+        description: Can't skip night
+    nightskip:
+        aliases: ntskp
+        description: General plugin command
+    

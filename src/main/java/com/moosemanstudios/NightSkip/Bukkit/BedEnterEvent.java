@@ -18,7 +18,7 @@ public class BedEnterEvent implements Listener {
 	@EventHandler
 	public void onBedEnter(PlayerBedEnterEvent event) {
 		// see if there is more than just the one person online, if there isn't we can just let sleeping occur naturally.
-		if ((Bukkit.getServer()._INVALID_getOnlinePlayers().length > 1) && (event.getPlayer().hasPermission("nightskip.skip")) && plugin.skipBedEnter) {
+		if ((Bukkit.getServer().getOnlinePlayers().size() > 1) && (event.getPlayer().hasPermission("nightskip.skip")) && plugin.skipBedEnter) {
 			Bukkit.getServer().dispatchCommand((CommandSender) event.getPlayer(), "skip");
 			event.getPlayer().sendMessage(ChatColor.YELLOW + "You've requested the jump to day");
 			event.setCancelled(true);
